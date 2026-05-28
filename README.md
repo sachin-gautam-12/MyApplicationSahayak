@@ -2,6 +2,8 @@
 
 **Sahayak** is an Android application developed for LPU (Lovely Professional University) students. The main purpose of this app is to provide a platform where students can help each other on campus.
 
+![Sahayak App Banner](sahayak%20application.png)
+
 ---
 
 ## 📌 Project Overview
