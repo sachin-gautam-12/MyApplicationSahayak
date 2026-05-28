@@ -28,18 +28,38 @@ fun SahayakSplashScreen(onSplashComplete: () -> Unit) {
         delay(2500)
         onSplashComplete()
     }
-    Box(modifier = Modifier.fillMaxSize().background(Color(0xFF121212)), contentAlignment = Alignment.Center) {
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF121212)),
+        contentAlignment = Alignment.Center
+    ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            // Purana Logo - ic_sahayak_logo_image.png
             Image(
-                painter = painterResource(id = R.drawable.ic_sahayak_logo),
+                painter = painterResource(id = R.drawable.ic_sahayak_logo_image),
                 contentDescription = "Sahayak Logo",
-                modifier = Modifier.size(150.dp)
+                modifier = Modifier.size(120.dp)
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            CircularProgressIndicator(color = Color(0xFFFFB300), strokeWidth = 4.dp)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text("SAHAYAK APP", color = Color(0xFFFFB300), fontWeight = FontWeight.Bold, fontSize = 20.sp)
-            Text("connecting campus care", color = Color.LightGray, fontSize = 12.sp)
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                "SAHAYAK",
+                color = Color(0xFFFFB300),
+                fontWeight = FontWeight.Bold,
+                fontSize = 28.sp
+            )
+            Text(
+                "connecting campus care",
+                color = Color.LightGray,
+                fontSize = 14.sp
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            CircularProgressIndicator(
+                color = Color(0xFFFFB300),
+                strokeWidth = 3.dp,
+                modifier = Modifier.size(40.dp)
+            )
         }
     }
 }
@@ -62,111 +82,101 @@ fun LoginGatewayScreen(onAuthSuccess: () -> Unit, onGuestMode: () -> Unit) {
         Card(
             modifier = Modifier.fillMaxWidth().padding(24.dp).verticalScroll(rememberScrollState()),
             colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(8.dp)
+            elevation = CardDefaults.cardElevation(6.dp),
+            shape = RoundedCornerShape(16.dp)
         ) {
             Column(modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                // Logo on Login Page
+                // Purana Logo - ic_sahayak_logo_image.png
                 Image(
-                    painter = painterResource(id = R.drawable.ic_sahayak_logo),
-                    contentDescription = "Logo",
-                    modifier = Modifier.size(80.dp)
+                    painter = painterResource(id = R.drawable.ic_sahayak_logo_image),
+                    contentDescription = "Sahayak Logo",
+                    modifier = Modifier.size(70.dp)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = if (isLoginMode) "🔒 WELCOME BACK" else "📝 CREATE ACCOUNT",
-                    fontSize = 18.sp,
+                    text = if (isLoginMode) "Welcome Back!" else "Create Account",
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF121212)
+                    color = Color.Black
                 )
                 Text(
-                    text = if (isLoginMode) "Login to continue" else "Register to get started",
-                    fontSize = 12.sp,
+                    text = if (isLoginMode) "Login to continue" else "Sign up to get started",
+                    fontSize = 13.sp,
                     color = Color.Gray
                 )
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 if (!isLoginMode) {
                     OutlinedTextField(
                         value = name,
                         onValueChange = { name = it },
-                        label = { Text("Full Name *") },
+                        label = { Text("Full Name") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(8.dp)
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     OutlinedTextField(
                         value = regNo,
                         onValueChange = { regNo = it },
-                        label = { Text("LPU Registration No *") },
-                        placeholder = { Text("12XXXXXX") },
+                        label = { Text("LPU Registration No") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(8.dp)
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                 }
 
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
-                    label = { Text(if (isLoginMode) "Email" else "Email *") },
+                    label = { Text("Email") },
                     placeholder = { Text("student@lpu.in") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
-                    isError = email.isNotEmpty() && !SahayakGlobalEngine.isValidEmail(email),
-                    supportingText = {
-                        if (email.isNotEmpty() && !SahayakGlobalEngine.isValidEmail(email)) {
-                            Text("Enter valid email", color = Color.Red, fontSize = 10.sp)
-                        }
-                    }
+                    shape = RoundedCornerShape(8.dp)
                 )
-
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Password *") },
+                    label = { Text("Password") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(8.dp)
                 )
 
                 if (!isLoginMode) {
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     OutlinedTextField(
                         value = confirmPassword,
                         onValueChange = { confirmPassword = it },
-                        label = { Text("Confirm Password *") },
+                        label = { Text("Confirm Password") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
-                        shape = RoundedCornerShape(12.dp),
-                        isError = confirmPassword.isNotEmpty() && password != confirmPassword
+                        isError = confirmPassword.isNotEmpty() && password != confirmPassword,
+                        shape = RoundedCornerShape(8.dp)
                     )
-
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     OutlinedTextField(
                         value = course,
                         onValueChange = { course = it },
-                        label = { Text("Course *") },
-                        placeholder = { Text("B.Tech CSE") },
+                        label = { Text("Course") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(8.dp)
                     )
-
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     OutlinedTextField(
                         value = phone,
                         onValueChange = { phone = it },
-                        label = { Text("Phone Number *") },
+                        label = { Text("Phone Number") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(8.dp)
                     )
                 }
 
@@ -182,17 +192,11 @@ fun LoginGatewayScreen(onAuthSuccess: () -> Unit, onGuestMode: () -> Unit) {
                         if (isLoginMode) {
                             if (email.isBlank() || password.isBlank()) {
                                 errorMessage = "Please enter email and password"
-                            } else if (!SahayakGlobalEngine.isValidEmail(email)) {
-                                errorMessage = "Please enter a valid email address"
                             } else {
                                 isLoading = true
                                 SahayakGlobalEngine.loginUser(email, password) { success, message ->
                                     isLoading = false
-                                    if (success) {
-                                        onAuthSuccess()
-                                    } else {
-                                        errorMessage = message
-                                    }
+                                    if (success) onAuthSuccess() else errorMessage = message
                                 }
                             }
                         } else {
@@ -200,7 +204,6 @@ fun LoginGatewayScreen(onAuthSuccess: () -> Unit, onGuestMode: () -> Unit) {
                                 name.isBlank() -> errorMessage = "Please enter your name"
                                 regNo.isBlank() -> errorMessage = "Please enter registration number"
                                 email.isBlank() -> errorMessage = "Please enter email"
-                                !SahayakGlobalEngine.isValidEmail(email) -> errorMessage = "Please enter a valid email address"
                                 password.isBlank() -> errorMessage = "Please enter password"
                                 password != confirmPassword -> errorMessage = "Passwords do not match"
                                 course.isBlank() -> errorMessage = "Please enter your course"
@@ -236,25 +239,34 @@ fun LoginGatewayScreen(onAuthSuccess: () -> Unit, onGuestMode: () -> Unit) {
                     },
                     modifier = Modifier.fillMaxWidth().height(50.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF121212)),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(10.dp),
                     enabled = !isLoading
                 ) {
                     if (isLoading) {
                         CircularProgressIndicator(color = Color(0xFFFFB300), modifier = Modifier.size(24.dp))
                     } else {
-                        Text(if (isLoginMode) "LOGIN" else "REGISTER", color = Color(0xFFFFB300), fontWeight = FontWeight.Bold)
+                        Text(
+                            if (isLoginMode) "LOGIN" else "REGISTER",
+                            color = Color(0xFFFFB300),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp
+                        )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
-
                 TextButton(onClick = { isLoginMode = !isLoginMode }) {
-                    Text(if (isLoginMode) "New User? Create Account" else "Already have account? Login", color = Color(0xFF1976D2))
+                    Text(
+                        if (isLoginMode) "New User? Create Account" else "Already have account? Login",
+                        color = Color(0xFF1976D2),
+                        fontSize = 13.sp
+                    )
                 }
 
-                Divider(modifier = Modifier.padding(vertical = 8.dp))
+                Divider(modifier = Modifier.padding(vertical = 8.dp), color = Color.LightGray)
+
                 TextButton(onClick = onGuestMode) {
-                    Text("🛡️ Continue as Guest", color = Color(0xFF1976D2), fontWeight = FontWeight.Bold)
+                    Text("Continue as Guest", color = Color.Gray, fontSize = 13.sp)
                 }
             }
         }

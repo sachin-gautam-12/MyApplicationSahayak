@@ -23,13 +23,16 @@ class MainActivity : ComponentActivity() {
             val context = LocalContext.current
             var mediaPlayer: MediaPlayer? = null
 
+            // For direct chat navigation from AcceptHelp
+            var directChatUser by remember { mutableStateOf<Pair<String, String>?>(null) }
+            var openChatDirectly by remember { mutableStateOf(false) }
+
             val permissionLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.RequestPermission()
             ) { granted ->
                 if (!granted) Toast.makeText(context, "Notification permission denied!", Toast.LENGTH_SHORT).show()
             }
 
-            // Listen for notifications to play sound
             LaunchedEffect(SahayakGlobalEngine.unreadNotificationCount) {
                 if (SahayakGlobalEngine.unreadNotificationCount > 0 && SahayakGlobalEngine.isPushEnabled) {
                     try {
@@ -62,41 +65,26 @@ class MainActivity : ComponentActivity() {
                         onSeekHelp = { screen = "seek" },
                         onAcceptHelp = { screen = "accept" },
                         onMyRequests = { screen = "myrequests" },
-                        onLogout = {
-                            SahayakGlobalEngine.currentUser = null
-                            screen = "login"
-                        },
+                        onLogout = { SahayakGlobalEngine.currentUser = null; screen = "login" },
                         onProfile = { screen = "profile" },
-                        onSettings = { screen = "settings" }
+                        onSettings = { screen = "settings" },
+                        directChatUser = directChatUser,
+                        onClearDirectChat = { directChatUser = null; openChatDirectly = false }
                     )
                 }
 
-                "seek" -> SeekHelpScreen(
+                "seek" -> SeekHelpScreen(onBack = { screen = "dashboard" }, onSubmit = { screen = "dashboard" })
+                "accept" -> AcceptHelpScreen(
                     onBack = { screen = "dashboard" },
-                    onSubmit = { request ->
+                    onOpenChat = { userId, userName, requestId ->
+                        // Directly open chat without going to profile first
+                        directChatUser = Pair(userId, userName)
                         screen = "dashboard"
                     }
                 )
-
-                "accept" -> AcceptHelpScreen(
-                    onBack = { screen = "dashboard" }
-                )
-
-                "myrequests" -> MyRequestsScreen(
-                    onBack = { screen = "dashboard" }
-                )
-
-                "profile" -> ProfileScreen(
-                    onBack = { screen = "dashboard" }
-                )
-
-                "settings" -> SettingsScreen(
-                    onBack = { screen = "dashboard" },
-                    onLogout = {
-                        SahayakGlobalEngine.currentUser = null
-                        screen = "login"
-                    }
-                )
+                "myrequests" -> MyRequestsScreen(onBack = { screen = "dashboard" })
+                "profile" -> ProfileScreen(onBack = { screen = "dashboard" })
+                "settings" -> SettingsScreen(onBack = { screen = "dashboard" }, onLogout = { SahayakGlobalEngine.currentUser = null; screen = "login" })
             }
         }
     }

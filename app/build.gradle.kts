@@ -94,4 +94,21 @@ dependencies {
 
     // For map tile caching
     implementation("androidx.preference:preference-ktx:1.2.1")
+
+    // Chat & Real-time
+    implementation("io.getstream:stream-chat-android-compose:6.0.0")
+
+    // Push Notifications (FCM)
+    implementation("com.google.firebase:firebase-messaging-ktx:23.4.0")
+
+    // PDF Generation
+    implementation("com.itextpdf:itext7-core:7.2.5")
+
+    // Multi-language support
+    implementation("androidx.core:core-ktx:1.12.0")
+
+    // Preference for Dark Mode
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    implementation("androidx.compose.material:material-icons-extended:1.6.0")
 }

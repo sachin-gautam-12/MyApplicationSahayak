@@ -25,21 +25,27 @@ import androidx.compose.ui.unit.sp
 fun SeekHelpScreen(onBack: () -> Unit, onSubmit: (HelpRequest) -> Unit) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var selectedLocation by remember { mutableStateOf("Block 1") }
+    var selectedLocation by remember { mutableStateOf("") }
     var selectedNeedType by remember { mutableStateOf("BASIC") }
+    var phoneNumber by remember { mutableStateOf(SahayakGlobalEngine.currentUser?.phone ?: "") }
     var showPopup by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
-    val blockNumbers = (1..60).map { "Block $it" }
-    var locationExpanded by remember { mutableStateOf(false) }
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        selectedImageUri = uri
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Request Aid", color = Color(0xFFFFB300), fontWeight = FontWeight.Bold) },
+                title = { Text("Need Help", color = Color(0xFFFFB300), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color(0xFFFFB300))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color(0xFFFFB300))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF121212))
@@ -55,168 +61,181 @@ fun SeekHelpScreen(onBack: () -> Unit, onSubmit: (HelpRequest) -> Unit) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Text("📢 New Help Request", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+            Text("📢 Request Assistance", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Black)
 
-            // Need Type Selection
-            Text("Need Type *", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // URGENT Button
-                Button(
+            // Need Type
+            Text("Priority Level", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                FilterChip(
+                    selected = selectedNeedType == "URGENT",
                     onClick = { selectedNeedType = "URGENT" },
-                    modifier = Modifier.width(160.dp).height(40.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (selectedNeedType == "URGENT") Color(0xFFF44336) else Color(0xFFF44336).copy(alpha = 0.3f)
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.Warning, null, tint = Color.White, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("URGENT", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                    }
-                }
-
-                // BASIC Button
-                Button(
+                    label = { Text("🔴 URGENT", fontSize = 12.sp) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Color(0xFFF44336),
+                        selectedLabelColor = Color.White
+                    )
+                )
+                FilterChip(
+                    selected = selectedNeedType == "BASIC",
                     onClick = { selectedNeedType = "BASIC" },
-                    modifier = Modifier.width(160.dp).height(40.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (selectedNeedType == "BASIC") Color(0xFF4CAF50) else Color(0xFF4CAF50).copy(alpha = 0.3f)
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.Info, null, tint = Color.White, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("BASIC", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                    }
-                }
+                    label = { Text("🟢 BASIC", fontSize = 12.sp) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Color(0xFF4CAF50),
+                        selectedLabelColor = Color.White
+                    )
+                )
             }
 
-            // Title
+            // Need/Requirement Title
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
-                label = { Text("Help Required *") },
-                placeholder = { Text("e.g., Need Chemistry Lab Manual") },
+                label = { Text("What do you need? *") },
+                placeholder = { Text("e.g., Chemistry Lab Manual, Notes, Calculator") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFFFFB300),
-                    unfocusedBorderColor = Color.Gray
-                )
+                shape = RoundedCornerShape(10.dp)
             )
 
             // Description
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
-                label = { Text("Description *") },
-                placeholder = { Text("Describe what help you need...") },
-                modifier = Modifier.fillMaxWidth().height(80.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFFFFB300),
-                    unfocusedBorderColor = Color.Gray
-                )
+                label = { Text("Description / Details *") },
+                placeholder = { Text("Describe what help you need in detail...") },
+                modifier = Modifier.fillMaxWidth().height(100.dp),
+                shape = RoundedCornerShape(10.dp)
             )
 
-            // Block Selection (1 to 60)
-            Text("Block Number (1-60) *", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-            ExposedDropdownMenuBox(
-                expanded = locationExpanded,
-                onExpandedChange = { locationExpanded = it }
+            // Location Block
+            OutlinedTextField(
+                value = selectedLocation,
+                onValueChange = { selectedLocation = it },
+                label = { Text("Your Location / Block *") },
+                placeholder = { Text("e.g., Block 34, Room 201, Library") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                shape = RoundedCornerShape(10.dp)
+            )
+
+            // Mobile Number
+            OutlinedTextField(
+                value = phoneNumber,
+                onValueChange = { phoneNumber = it },
+                label = { Text("Mobile Number *") },
+                placeholder = { Text("Enter your contact number") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                shape = RoundedCornerShape(10.dp),
+                supportingText = {
+                    Text("Helpers will contact you on this number", fontSize = 10.sp, color = Color.Gray)
+                }
+            )
+
+            // Image Option
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                shape = RoundedCornerShape(10.dp),
+                elevation = CardDefaults.cardElevation(1.dp)
             ) {
-                OutlinedTextField(
-                    value = selectedLocation,
-                    onValueChange = {},
-                    readOnly = true,
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = locationExpanded) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFFFB300),
-                        unfocusedBorderColor = Color.Gray
-                    )
-                )
-                ExposedDropdownMenu(
-                    expanded = locationExpanded,
-                    onDismissRequest = { locationExpanded = false },
-                    modifier = Modifier.height(250.dp)
-                ) {
-                    blockNumbers.forEach { block ->
-                        DropdownMenuItem(
-                            text = { Text(block) },
-                            onClick = {
-                                selectedLocation = block
-                                locationExpanded = false
-                            }
-                        )
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Image, null, tint = Color(0xFF1976D2), modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Add Image (Optional)", fontSize = 13.sp, color = Color.Gray)
+                        }
+                        Button(
+                            onClick = { imagePickerLauncher.launch("image/*") },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2)),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.height(32.dp)
+                        ) {
+                            Text("Choose Image", fontSize = 11.sp, color = Color.White)
+                        }
+                    }
+                    if (selectedImageUri != null) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("✓ Image selected", fontSize = 11.sp, color = Color(0xFF4CAF50))
                     }
                 }
             }
 
-            // Submit Button
+            errorMessage?.let {
+                Text(it, color = Color.Red, fontSize = 12.sp)
+            }
+
             Button(
                 onClick = {
-                    if (title.isNotBlank() && description.isNotBlank()) {
-                        isLoading = true
-                        val request = HelpRequest(
-                            title = title,
-                            description = description,
-                            location = selectedLocation,
-                            needType = selectedNeedType,
-                            blockNumber = selectedLocation.replace("Block ", "").toIntOrNull() ?: 1,
-                            userName = SahayakGlobalEngine.currentUser?.name ?: "Guest",
-                            userRegNo = SahayakGlobalEngine.currentUser?.regNo ?: "GUEST",
-                            userCourse = SahayakGlobalEngine.currentUser?.course ?: "",
-                            userPhone = SahayakGlobalEngine.currentUser?.phone ?: "",
-                            userEmail = SahayakGlobalEngine.currentUser?.email ?: ""
-                        )
-                        SahayakGlobalEngine.addHelpRequest(request) { success ->
-                            isLoading = false
-                            if (success) {
-                                showPopup = true
-                                onSubmit(request)
+                    when {
+                        title.isBlank() -> errorMessage = "Please enter what you need"
+                        description.isBlank() -> errorMessage = "Please enter description"
+                        selectedLocation.isBlank() -> errorMessage = "Please enter your location"
+                        phoneNumber.isBlank() -> errorMessage = "Please enter your mobile number"
+                        else -> {
+                            isLoading = true
+                            errorMessage = null
+                            val request = HelpRequest(
+                                title = title,
+                                description = description,
+                                location = selectedLocation,
+                                needType = selectedNeedType,
+                                blockNumber = selectedLocation.replace("Block ", "").toIntOrNull() ?: 1,
+                                userName = SahayakGlobalEngine.currentUser?.name ?: "Guest",
+                                userRegNo = SahayakGlobalEngine.currentUser?.regNo ?: "GUEST",
+                                userCourse = SahayakGlobalEngine.currentUser?.course ?: "",
+                                userPhone = phoneNumber,
+                                userEmail = SahayakGlobalEngine.currentUser?.email ?: ""
+                            )
+                            SahayakGlobalEngine.addHelpRequest(request) { success ->
+                                isLoading = false
+                                if (success) {
+                                    showPopup = true
+                                    onSubmit(request)
+                                } else {
+                                    errorMessage = "Failed to create request"
+                                }
                             }
                         }
                     }
                 },
-                modifier = Modifier.fillMaxWidth().height(48.dp),
+                modifier = Modifier.fillMaxWidth().height(50.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF121212)),
-                shape = RoundedCornerShape(10.dp),
-                enabled = title.isNotBlank() && description.isNotBlank()
+                shape = RoundedCornerShape(12.dp),
+                enabled = !isLoading
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(color = Color(0xFFFFB300), modifier = Modifier.size(24.dp))
                 } else {
-                    Icon(Icons.Default.Send, null, tint = Color(0xFFFFB300), modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("LAUNCH BROADCAST", color = Color(0xFFFFB300), fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Icon(Icons.Default.Send, null, tint = Color(0xFFFFB300), modifier = Modifier.size(20.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text("BROADCAST REQUEST", color = Color(0xFFFFB300), fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 }
             }
         }
     }
 
-    // Success Popup
     if (showPopup) {
         AlertDialog(
             onDismissRequest = { showPopup = false },
-            icon = { Icon(Icons.Filled.CheckCircle, null, tint = Color(0xFF4CAF50), modifier = Modifier.size(40.dp)) },
-            title = { Text("✅ Request Added!", fontWeight = FontWeight.Bold) },
+            icon = { Icon(Icons.Default.CheckCircle, null, tint = Color(0xFF4CAF50), modifier = Modifier.size(48.dp)) },
+            title = { Text("✓ Request Broadcasted!", fontWeight = FontWeight.Bold) },
             text = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Your request has been broadcasted!", fontSize = 13.sp)
-                    Text("Location: $selectedLocation", color = Color(0xFF1976D2), fontSize = 12.sp)
-                    Text("Need Type: $selectedNeedType", color = if (selectedNeedType == "URGENT") Color.Red else Color(0xFF4CAF50), fontSize = 12.sp)
+                    Text("Your request has been sent to campus helpers.", fontSize = 13.sp)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text("📍 $selectedLocation", color = Color(0xFF1976D2), fontSize = 12.sp)
+                    Text("Priority: $selectedNeedType", color = if (selectedNeedType == "URGENT") Color.Red else Color(0xFF4CAF50), fontSize = 12.sp)
+                    Text("📞 $phoneNumber", fontSize = 11.sp, color = Color.Gray)
                 }
             },
             confirmButton = {
-                Button(
-                    onClick = { showPopup = false },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
-                ) {
+                Button(onClick = { showPopup = false }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))) {
                     Text("OK", color = Color.White)
                 }
             }
